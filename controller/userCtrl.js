@@ -1,6 +1,7 @@
 const User = require('../models/userModel')
 const asyncHandler = require('express-async-handler')
 const {generateToken} = require('../config/jwtToken')
+const validateMongoDbId = require('../utils/validateMongodid')
 
 //ฟังกชั่นสร้างข้อมูลสมาชิก
 const createUser = asyncHandler( async (req, res) => {
@@ -56,6 +57,8 @@ const getaUser = asyncHandler(async (req, res) => {
     //รับค่า id จาก params ที่แนบมาจาก url :exmple:500/1
     // localhost:4000/api/user/63cb95ff0765669fb14e08fe
     const id  = req.params.id 
+    validateMongoDbId(id)
+
     try {
         const getUsers = await User.findById(id)
         return res.json(getUsers)
@@ -69,6 +72,8 @@ const deleteUser = asyncHandler(async (req, res) => {
     //รับค่า id จาก params ที่แนบมาจาก url :exmple:500/1
     // localhost:4000/api/user/63cb95ff0765669fb14e08fe
     const id  = req.params.id 
+    validateMongoDbId(id)
+
     try {
         const getUsers = await User.findByIdAndDelete(id) //ลบข้อมูลด้วยคำสั่ง findByIdAndDelete
         return res.json(getUsers)
@@ -80,6 +85,7 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 const updatedUser = asyncHandler( async (req, res) => {
     const  { id } = req.params
+    validateMongoDbId(id)
     try {
         //findByIdAndUpdate เป็นคำสั่งสำหรับอัพเดทข้อมูลของ mongodb
         const updatedUser = await User.findByIdAndUpdate(
@@ -102,8 +108,10 @@ const updatedUser = asyncHandler( async (req, res) => {
 
 const blockUser = asyncHandler( async (req,res) => {
     const  { id } = req.params
+    validateMongoDbId(id)
+
     try {
-        const block = User.findByIdAndUpdate(id,
+        const block = await User.findByIdAndUpdate(id,
             {
                 isBlocked:true
             },
@@ -112,7 +120,8 @@ const blockUser = asyncHandler( async (req,res) => {
             }
         )
         return res.json({
-            message:"User Blocked"
+            message:"User Blocked",
+            response:{block}
         })
     } catch (error) {
         throw new Error(error)
@@ -121,8 +130,9 @@ const blockUser = asyncHandler( async (req,res) => {
 
 const unblockUser = asyncHandler( async (req, res) => {
     const  { id } = req.params
+    validateMongoDbId(id)
     try {
-        const unblock = User.findByIdAndUpdate(id,
+        const unblock = await User.findByIdAndUpdate(id,
             {
                 isBlocked:false
             },
@@ -131,7 +141,8 @@ const unblockUser = asyncHandler( async (req, res) => {
             }
         )
         return res.json({
-            message:"User UnBlocked"
+            message:"User UnBlocked",
+            response:{unblock}
         })
     } catch (error) {
         throw new Error(error)
