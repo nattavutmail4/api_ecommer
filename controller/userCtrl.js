@@ -149,6 +149,8 @@ const unblockUser = asyncHandler( async (req, res) => {
     }
 })
 
+
+// export function ไปใช้
 module.exports = { 
     createUser, loginUserCtrl , getallUser , getaUser, deleteUser , updatedUser,
     blockUser, unblockUser
