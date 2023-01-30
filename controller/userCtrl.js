@@ -2,6 +2,9 @@ const User = require('../models/userModel')
 const asyncHandler = require('express-async-handler')
 const {generateToken} = require('../config/jwtToken')
 const validateMongoDbId = require('../utils/validateMongodid')
+const { generateRefreshToken } = require('../config/refreshtoken')
+
+
 
 //ฟังกชั่นสร้างข้อมูลสมาชิก
 const createUser = asyncHandler( async (req, res) => {
@@ -27,6 +30,20 @@ const loginUserCtrl = asyncHandler( async (req, res) => {
     // isPasswordMatched คือการไปที่ฟังชั่นดั่งกล่าวแล้วให้ bcrypt.compare รหัสผ่าน
     if(findUser && await findUser.isPasswordMatched(password)){
 
+        const refreshToken = await generateRefreshToken(findUser?._id)
+        const updateuser = await User.findByIdAndUpdate(findUser.id, {
+            refreshToken: refreshToken
+        },
+        {
+            new:true
+        }
+        )
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly:true,
+            maxAge: 72 * 60 * 60 * 1000
+        })
+
        // ข้อมูลที่ถูกส่งออกไปแสดง 
        return res.json({
             _id: findUser?._id,
@@ -41,6 +58,14 @@ const loginUserCtrl = asyncHandler( async (req, res) => {
         throw new Error("Invalid Credentials")
     }
 })
+
+
+// handle refresh token
+const handleRefreshToken  = asyncHandler( async (req, res) => {
+    const cookie  = req.cookies
+    console.log(cookie);
+})
+
 
 // ฟังกชัน getAlluser
 const getallUser = asyncHandler( async ( req, res) => {
@@ -153,5 +178,5 @@ const unblockUser = asyncHandler( async (req, res) => {
 // export function ไปใช้
 module.exports = { 
     createUser, loginUserCtrl , getallUser , getaUser, deleteUser , updatedUser,
-    blockUser, unblockUser
+    blockUser, unblockUser, handleRefreshToken
 }

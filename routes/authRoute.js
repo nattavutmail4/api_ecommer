@@ -9,7 +9,8 @@ const {
     deleteUser,
     updatedUser,
     unblockUser,
-    blockUser
+    blockUser,
+    handleRefreshToken
 } = require('../controller/userCtrl')
 
 
@@ -19,15 +20,10 @@ router.get('/all-users',getallUser)
 router.get('/:id', authMiddleware, isAdmin, getaUser)
 
 router.post('/register',createUser)
-
-
 router.post('/login', loginUserCtrl)
-
+router.delete('/:id', authMiddleware, deleteUser)
 router.put('/:id',authMiddleware, updatedUser)
-
 router.put('/block-user/:id',authMiddleware, isAdmin ,blockUser)
 router.put('/unblock-user/:id',authMiddleware, isAdmin ,unblockUser)
-
-router.delete('/:id', authMiddleware, deleteUser)
-
+router.get('/refresh', handleRefreshToken)
 module.exports = router
